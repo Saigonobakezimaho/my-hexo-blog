@@ -26,9 +26,7 @@ pretty_urls:
   #api_host: "https://api.chatanywhere.tech/v1/chat/completions"
   
 ai_chat:
-  token_p1: PZbyNZab3lEGtpQ42G0tIwmxUG5SK7
-  token_p2: gnGQSLlq0aHdKAE39v
-  api_host: https://api.chatanywhere.tech/v1/chat/completions
+  worker_url: https://my-hexo-blog-api.workers.dev
 
 # Directory
 source_dir: source

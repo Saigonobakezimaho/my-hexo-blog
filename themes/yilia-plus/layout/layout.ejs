@@ -194,8 +194,7 @@
       document.getElementById('close-fortune').onclick = (e) => { e.stopPropagation(); fCtn.style.display = 'none'; };
 
       // --- 2. 核心状态同步逻辑 (方案二：LocalStorage) ---
-      const _p1 = "<%- config.ai_chat.token_p1 %>", _p2 = "<%- config.ai_chat.token_p2 %>", API_HOST = "<%- config.ai_chat.api_host %>";
-      const _getS = () => "sk-" + _p1 + _p2;
+      const API_HOST = "<%- config.ai_chat.worker_url %>";
 
       // 从本地存储恢复显示状态：0-PNG, 1-Live2D, 2-隐藏
       let displayState = parseInt(localStorage.getItem('my_display_state') || '0');
@@ -309,7 +308,7 @@
         const msgBox = appendMsg('AI', '......', false), span = msgBox.querySelector('.txt');
         try {
           const r = await fetch(API_HOST, {
-            method: 'POST', headers: { 'Authorization': `Bearer ${_getS()}`, 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               model: "gpt-5-mini", stream: true,
               messages: [{ role: "system", content: `${currentPersona}\n沉浸式表演。当前时间：${new Date().toLocaleString()}` }, ...chatHistories[currentKey].slice(-15)]
