@@ -1,0 +1,108 @@
+<script>
+        var yiliaConfig = {
+                mathjax: <%=theme.mathjax%>,
+                isHome: <%=is_home()%>,
+                isPost: <%=is_post()%>,
+                isArchive: <%=is_archive()%>,
+                isTag: <%=is_tag()%>,
+                isCategory: <%=is_category()%>,
+                open_in_new: <%=theme.open_in_new.article%>,
+                toc_hide_index: <%=theme.toc_hide_index%>,
+                root: "<%- url_for('/') %>",
+                innerArchive: <%=theme.smart_menu.innerArchive ? true : false%>,
+                showTags: <%=(theme.slider && theme.slider.showTags) ? true : false%>
+        }
+        
+        
+</script>
+
+<%- partial('script') %>
+
+<% if (theme.mathjax){ %>
+<%- partial('mathjax') %>
+<% } %>
+
+<%- partial('tab-title-change') %>
+
+
+<script>
+    console.log("%c 欢迎访问我的博客 %c", "color: #fff; background: #f27398; padding:5px 0;", "background: #1c2b36; padding:5px 0;");
+    console.log("%c 你竟然在偷看我的控制台！(oﾟvﾟ)ノ", "color: #ff9999;");
+</script>
+
+
+<script>
+ var OriginTitile = document.title;
+ var titleTime;
+ document.addEventListener('visibilitychange', function () {
+     if (document.hidden) {
+         document.title = ' (つ ?_? )つ 别走呀~ ' + OriginTitile;
+         clearTimeout(titleTime);
+     }
+     else {
+         document.title = ' (╯°□°）╯ 你回来啦！ ' + OriginTitile;
+         titleTime = setTimeout(function () {
+             document.title = OriginTitile;
+         }, 2000);
+     }
+ });
+</script>
+
+
+
+<script>
+(function() {
+  var addCopyButtons = function() {
+    // 找到所有代码块容器
+    document.querySelectorAll('figure.highlight').forEach(function(codeBlock) {
+      // 检查是否已经加过按钮
+      if (codeBlock.querySelector('.custom-copy-btn')) return;
+
+      // 1. 强制设置容器为相对定位，确保按钮能定位
+      codeBlock.style.position = 'relative';
+
+      // 2. 创建按钮
+      var button = document.createElement('button');
+      button.className = 'custom-copy-btn';
+      button.type = 'button';
+      button.innerText = '复制';
+
+      // 3. 按钮样式直接写在 JS 里，最稳妥
+      Object.assign(button.style, {
+        position: 'absolute',
+        top: '5px',
+        right: '5px',
+        zIndex: '99',
+        padding: '2px 8px',
+        fontSize: '12px',
+        color: '#ddd',
+        backgroundColor: '#555',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        opacity: '0.8'
+      });
+
+      // 4. 绑定复制逻辑
+      button.addEventListener('click', function() {
+        var code = codeBlock.querySelector('.code').innerText;
+        navigator.clipboard.writeText(code).then(function() {
+          button.innerText = '已复制!';
+          setTimeout(function() { button.innerText = '复制'; }, 2000);
+        });
+      });
+
+      // 5. 鼠标划过显示，离开隐藏
+      codeBlock.addEventListener('mouseenter', function() { button.style.opacity = '1'; });
+      codeBlock.addEventListener('mouseleave', function() { button.style.opacity = '0.8'; });
+
+      codeBlock.appendChild(button);
+    });
+  };
+
+  // 页面加载完成后执行一次，如果是异步加载则延迟一点执行
+  window.addEventListener('load', addCopyButtons);
+  setTimeout(addCopyButtons, 1500); // 针对某些主题的延迟渲染
+})();
+</script>
+

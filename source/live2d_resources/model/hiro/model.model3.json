@@ -1,0 +1,36 @@
+{
+    "Version": 3,
+    "FileReferences": {
+        "Moc": "hiro.moc3",
+        "Textures": [
+            "hiro.8192/texture_00.png"
+        ],
+        "Physics": "hiro.physics3.json",
+        "DisplayInfo": "hiro.cdi3.json",
+        "Expressions": [
+            { "Name": "monvhua", "File": "monvhua.exp3.json" },
+            { "Name": "taishou", "File": "taishou.exp3.json" },
+            { "Name": "zuibu", "File": "zuibu.exp3.json" }
+        ],
+        "Motions": {
+            "Idle": [
+                { "File": "" }
+            ]
+        }
+    },
+    "Groups": [
+        {
+            "Target": "Parameter",
+            "Name": "LipSync",
+            "Ids": []
+        },
+        {
+            "Target": "Parameter",
+            "Name": "EyeBlink",
+            "Ids": [
+                "ParamEyeLOpen",
+                "ParamEyeROpen"
+            ]
+        }
+    ]
+}

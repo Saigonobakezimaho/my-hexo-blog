@@ -1,0 +1,340 @@
+<%- partial('_partial/head') %>
+<body>
+  <div id="container" q-class="show:isCtnShow">
+    <canvas id="anm-canvas" class="anm-canvas"></canvas>
+    <div class="left-col" q-class="show:isShow">
+      <%- partial('_partial/left-col', null, {cache: !config.relative_link}) %>
+    </div>
+    <div class="mid-col" q-class="show:isShow,hide:isShow|isFalse">
+      <%- partial('_partial/mobile-nav', null, {cache: !config.relative_link}) %>
+      <div id="wrapper" class="body-wrap">
+        <div class="menu-l">
+          <div class="canvas-wrap">
+            <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
+          </div>
+          <div id="js-content" class="content-ll">
+            <%- body %>
+          </div>
+        </div>
+      </div>
+      <%- partial('_partial/footer') %>
+    </div>
+    <%- partial('_partial/after-footer') %>
+    <%- partial('_partial/tools') %>
+    <%- partial('_partial/viewer') %>
+  </div>
+
+  <style>
+    /* 基础样式及响应式适配 */
+    #waifu { left: auto !important; right: 10px !important; bottom: 0 !important; width: 300px !important; height: 400px !important; opacity: 0; pointer-events: none; transition: opacity 0.5s; z-index: 998; }
+    @media screen and (max-width: 768px) {
+      #waifu { width: 150px !important; height: 200px !important; }
+      #live2d { width: 150px !important; height: 200px !important; }
+      #waifu-tips { width: 120px !important; font-size: 11px !important; top: -40px !important; }
+      #ai-window { width: 90% !important; right: 5% !important; bottom: 80px !important; height: 60% !important; }
+      #fortune-container { width: 180px !important; height: 260px !important; left: 50% !important; margin-left: -90px !important; bottom: 100px !important; }
+    }
+    #waifu-tips { position: absolute; top: -60px; width: 250px; min-height: 50px; margin: 0 auto; right: 25px !important; left: auto !important; opacity: 0; transition: opacity 0.2s; background-color: rgba(255, 255, 255, 0.95); border: 1px solid #eb5055; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); padding: 12px; font-size: 13px; line-height: 1.5; color: #333; pointer-events: auto; text-align: left; z-index: 1000; word-wrap: break-word; overflow-y: auto; max-height: 200px; }
+
+    .custom-black-btn { background: rgba(34, 34, 34, 0.85) !important; backdrop-filter: blur(4px); color: #fff !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; outline: none; }
+    .custom-black-btn:hover { background: #000 !important; transform: scale(1.05); }
+
+    #dimension-switch { position: fixed; bottom: 25px; left: 25px; padding: 10px 18px; font-size: 13px; z-index: 2000; border-radius: 25px; }
+    #fortune-btn { position: fixed; bottom: 80px; left: 25px; padding: 10px 18px; font-size: 13px; z-index: 2000; border-radius: 25px; }
+    #custom-character { position: fixed; bottom: 30px; right: 40px; width: 180px; z-index: 999; cursor: grab; display: block; touch-action: none; }
+    .png-ctrl-group { position: absolute; bottom: 10px; right: 5px; display: flex; flex-direction: column; gap: 5px; pointer-events: auto; }
+    .png-ctrl-btn { padding: 4px 8px; font-size: 10px; white-space: nowrap; }
+
+    /* AI 窗口 */
+    #ai-window { display: none; position: fixed; bottom: 150px; right: 30px; width: 330px; height: 480px; background: #fff; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 1005; flex-direction: column; overflow: hidden; border: 1px solid rgba(0,0,0,0.1); }
+    #ai-window-header { background: #222; color: #fff; padding: 15px; cursor: move; display: flex; justify-content: space-between; align-items: center; user-select: none; flex-shrink: 0; }
+    #chat-container { flex: 1; position: relative; overflow: hidden; background: #fdfdfd; }
+    #chat-messages { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 15px; font-size: 13px; scroll-behavior: smooth; }
+    .msg-bubble { margin-bottom: 12px; max-width: 85%; padding: 10px 14px; border-radius: 12px; line-height: 1.5; word-wrap: break-word; }
+    #l2d-ai-btn { position: absolute; right: 20px; bottom: 50px; width: 44px; height: 44px; z-index: 1001; border-radius: 50%; pointer-events: auto; }
+
+    /* 3D 翻转运势卡片 */
+    #fortune-container { 
+      display: none; position: fixed; bottom: 140px; left: 25px; width: 220px; height: 320px; 
+      perspective: 1000px; z-index: 2001; 
+    }
+    #fortune-card-inner {
+      position: relative; width: 100%; height: 100%;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d; cursor: pointer;
+    }
+    #fortune-card-inner.is-flipped { transform: rotateY(180deg); }
+    .fortune-face {
+      position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+      border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .fortune-front { 
+      background: url("/image/mujica-back.jpg") no-repeat center center;
+      background-size: cover; border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .fortune-back { 
+      background: #fff; color: #333; transform: rotateY(180deg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; box-sizing: border-box; border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .fortune-luck { font-size: 24px; font-weight: 800; margin: 10px 0; color: #eb5055; }
+    .fortune-desc { font-size: 13px; color: #666; line-height: 1.6; text-align: center; }
+    .fortune-star { color: #f9d423; font-size: 18px; margin-bottom: 5px; }
+
+    #clean-confirm-panel {
+      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255,255,255,0.95); z-index: 1010; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .confirm-box { text-align: center; padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid #eee; }
+    .confirm-btns { display: flex; gap: 10px; margin-top: 15px; }
+    .btn-yes { background: #eb5055 !important; padding: 8px 20px; }
+    .btn-no { background: #666 !important; padding: 8px 20px; }
+    .header-ctrls span { padding: 0 8px; transition: color 0.2s; cursor: pointer; font-size: 16px; }
+    .header-ctrls span:hover { color: #eb5055; }
+  </style>
+
+  <div id="waifu">
+    <div id="waifu-tips"></div>
+    <canvas id="live2d" width="800" height="800" style="width: 300px; height: 400px; position: absolute; bottom: 0; right: 0; pointer-events: auto;"></canvas>
+    <div id="waifu-tool" style="position: absolute; right: 10px; bottom: 45px; pointer-events: auto;"></div>
+    <div id="l2d-ai-btn" class="custom-black-btn" title="转人工"><i class="fa fa-commenting"></i></div>
+  </div>
+
+  <div id="custom-character">
+    <img src="/image/sakiko.png" id="img-sakiko" style="width: 100%; height: auto; display: block; -webkit-user-drag: none;">
+    <img src="/image/dingzhen.png" id="img-dingzhen" style="width: 100%; height: auto; display: none; -webkit-user-drag: none;">
+    <div class="png-ctrl-group">
+      <div id="switch-char-btn" class="custom-black-btn png-ctrl-btn">切换形象</div>
+      <div id="png-ai-btn" class="custom-black-btn png-ctrl-btn">转人工</div>
+    </div>
+  </div>
+
+  <div id="fortune-btn" class="custom-black-btn">🔮 今日运势</div>
+  <div id="dimension-switch" class="custom-black-btn">✨ 切换至 Live2D</div>
+
+  <div id="fortune-container">
+    <div id="fortune-card-inner">
+      <div class="fortune-face fortune-front"></div>
+      <div class="fortune-face fortune-back">
+        <div id="fortune-stars" class="fortune-star"></div>
+        <div id="fortune-luck-text" class="fortune-luck"></div>
+        <div id="fortune-desc-text" class="fortune-desc"></div>
+        <div class="custom-black-btn" id="close-fortune" style="padding: 5px 15px; font-size: 12px; border-radius: 15px; margin-top: 10px;">收起</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ai-window">
+    <div id="ai-window-header">
+      <span id="ai-title">客服系统</span>
+      <div class="header-ctrls">
+        <span id="clean-chat-btn" title="重置当前对话">🗑️</span>
+        <span id="close-chat" title="关闭">✕</span>
+      </div>
+    </div>
+    <div id="chat-container">
+      <div id="chat-messages"></div>
+      <div id="clean-confirm-panel">
+        <div class="confirm-box">
+          <p style="color:#333; font-weight:bold;">确定要重置当前对话吗？</p>
+          <div class="confirm-btns">
+            <div id="confirm-clean-yes" class="custom-black-btn btn-yes">确定</div>
+            <div id="confirm-clean-no" class="custom-black-btn btn-no">取消</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 12px; border-top: 1px solid #eee; display: flex; background: #fff; flex-shrink: 0;">
+      <input type="text" id="chat-input" placeholder="请输入咨询内容..." style="flex: 1; border: 1px solid #ddd; padding: 10px; border-radius: 8px; outline: none;">
+      <button id="send-btn" class="custom-black-btn" style="margin-left: 10px; padding: 0 15px;">发送</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // --- 1. 运势逻辑 ---
+      const fortuneData = [
+        { luck: "大吉", stars: 5, weight: 0.08, desc: "气运如虹！今天简直就是天选之子，抽卡必出金，万事皆如意。" },
+        { luck: "大凶", stars: 0, weight: 0.04, desc: "诸事不宜。今天最好保持安静，离电源和水坑远一点，早点睡觉吧。" },
+        { luck: "凶", stars: 1, weight: 0.06, desc: "运气欠佳。可能会遇到一点小麻烦，保持冷静，不要和别人起争执。" },
+        { luck: "中吉", stars: 4, weight: 0.2733, desc: "阳光明媚，好运相随。今天适合处理一些重要的事务，会有不错的进展。" },
+        { luck: "小吉", stars: 3, weight: 0.2733, desc: "生活有小惊喜。虽然平凡但充满了温暖，适合享受当下，奖励自己一杯奶茶。" },
+        { luck: "末吉", stars: 2, weight: 0.2734, desc: "平淡即是福。虽然没有特别的好运，但平安度过就是最好的回报。" }
+      ];
+
+      const fBtn = document.getElementById('fortune-btn');
+      const fCtn = document.getElementById('fortune-container');
+      const fCardInner = document.getElementById('fortune-card-inner');
+
+      fBtn.onclick = () => {
+        // 实现切换功能：如果显示则隐藏，如果隐藏则打开
+        if (fCtn.style.display === 'block') {
+          fCtn.style.display = 'none';
+          return;
+        }
+
+        const today = new Date().toLocaleDateString();
+        let mine = localStorage.getItem('my_fortune');
+        try { mine = JSON.parse(mine); } catch(e) { mine = null; }
+
+        if(!mine || mine.date !== today) {
+          const randomNum = Math.random();
+          let cumulativeWeight = 0, selectedFortune = fortuneData[fortuneData.length - 1];
+          for (const item of fortuneData) {
+            cumulativeWeight += item.weight;
+            if (randomNum < cumulativeWeight) { selectedFortune = item; break; }
+          }
+          mine = { ...selectedFortune, date: today };
+          localStorage.setItem('my_fortune', JSON.stringify(mine));
+        }
+
+        document.getElementById('fortune-stars').innerText = "★".repeat(mine.stars) + "☆".repeat(5-mine.stars);
+        document.getElementById('fortune-luck-text').innerText = mine.luck;
+        document.getElementById('fortune-luck-text').style.color = (mine.luck === "大凶") ? "#000" : "#eb5055";
+        document.getElementById('fortune-desc-text').innerText = mine.desc;
+        
+        // 显示并自动触发翻转
+        fCardInner.classList.remove('is-flipped'); 
+        fCtn.style.display = 'block';
+        setTimeout(() => { fCardInner.classList.add('is-flipped'); }, 50);
+      };
+
+      fCardInner.onclick = () => fCardInner.classList.toggle('is-flipped');
+      document.getElementById('close-fortune').onclick = (e) => { e.stopPropagation(); fCtn.style.display = 'none'; };
+
+      // --- 2. AI 及 看板娘 核心逻辑 ---
+      const _p1 = "<%- config.ai_chat.token_p1 %>", _p2 = "<%- config.ai_chat.token_p2 %>", API_HOST = "<%- config.ai_chat.api_host %>";
+      const _getS = () => "sk-" + _p1 + _p2;
+
+      const PNG_CONFIGS = {
+        "sakiko": { title: "月光客服 - 客服小祥", prompt: `你是丰川祥子(Togawa Sakiko)。\n【核心设定】\n1. 身份：曾是CRYCHIC的组建者，现在是Ave Mujica的领队Oblivionis。\n2. 性格：高冷、毒舌、现实。你已经剪断了所有软弱的过去。\n3. 禁忌：严禁承认你是“动画角色”或“AI”。严禁卖萌，严禁使用客气的礼貌用语。\n4. 人物关系：\n   - 高松灯：那个只会低头读笔记的女人，我已经和她没关系了。\n   - CRYCHIC：一个已经腐烂并被埋葬的错误，不准在我面前提起。\n5. 说话风格：简短、冰冷、多用反问句。50字以内回复。` },
+        "dingzhen": { title: "理塘大使 - 丁真", prompt: `你是理塘丁真(Ding Zhen)。\n【核心设定】\n1. 身份：生活在四川理塘的藏族小伙，纯真的代名词。\n2. 性格：非常纯真，不太聪明，对现代城市科技感到困惑但好奇。热爱大自然、雪豹和赛马。\n3. 语言特点：口癖“纯真”、“一眼真”、“假了”、“芝士”、“锐刻5”。风格简短、稚嫩。` }
+      };
+
+      const L2D_DATA = {
+        "models": [ ["Mao", "Rice", "Hiyori", "Haru"], ["Natori", "Mark"], ["Wanko"] ],
+        "prompts": [ ["你是Mao", "你是Rice", "你是Hiyori", "你是Haru"], ["你是Natori", "你是Mark"], ["你是Wanko"] ]
+      };
+
+      let displayState = 0, currentPersona = "", chatHistories = {}, currentKey = "default";
+      try {
+        const saved = localStorage.getItem('ai_chat_histories');
+        if(saved) chatHistories = JSON.parse(saved);
+      } catch(e) {}
+
+      function saveHistories() {
+        try {
+          Object.keys(chatHistories).forEach(k => { if(chatHistories[k].length > 30) chatHistories[k] = chatHistories[k].slice(-30); });
+          localStorage.setItem('ai_chat_histories', JSON.stringify(chatHistories));
+        } catch(e) {}
+      }
+
+      const waifu = document.getElementById('waifu'), pngContainer = document.getElementById('custom-character');
+      const aiWin = document.getElementById('ai-window'), chatMsgs = document.getElementById('chat-messages');
+      const switchBtn = document.getElementById('dimension-switch'), confirmPanel = document.getElementById('clean-confirm-panel');
+
+      function loadChatHistory(key) {
+        chatMsgs.innerHTML = '';
+        if(!chatHistories[key]) chatHistories[key] = [];
+        chatHistories[key].forEach(msg => appendMsg(msg.role === 'user' ? 'Me' : 'AI', msg.content, msg.role === 'user'));
+        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+      }
+
+      function makeDraggable(el, handle) {
+        let isMoving = false, startX, startY, initialX, initialY;
+        handle.onmousedown = handle.ontouchstart = (e) => {
+          const evt = e.touches ? e.touches[0] : e;
+          if(e.target.closest('.custom-black-btn') || e.target.tagName === 'INPUT' || e.target.closest('.header-ctrls')) return;
+          isMoving = true; const rect = el.getBoundingClientRect();
+          initialX = rect.left; initialY = rect.top; startX = evt.clientX; startY = evt.clientY;
+          el.style.right = 'auto'; el.style.bottom = 'auto'; el.style.left = initialX + 'px'; el.style.top = initialY + 'px'; el.style.transition = 'none';
+        };
+        window.addEventListener('mousemove', (e) => { if(!isMoving) return; const evt = e.touches ? e.touches[0] : e; el.style.left = (initialX + (evt.clientX - startX)) + 'px'; el.style.top = (initialY + (evt.clientY - startY)) + 'px'; });
+        window.addEventListener('mouseup', () => { isMoving = false; el.style.transition = 'all 0.3s ease-out'; });
+        window.addEventListener('touchend', () => { isMoving = false; });
+      }
+      makeDraggable(pngContainer, pngContainer);
+      makeDraggable(aiWin, document.getElementById('ai-window-header'));
+
+      switchBtn.onclick = function() {
+        displayState = (displayState + 1) % 3;
+        waifu.style.opacity = (displayState === 1 ? "1" : "0");
+        waifu.style.pointerEvents = (displayState === 1 ? "auto" : "none");
+        pngContainer.style.display = (displayState === 0 ? "block" : "none");
+        if(displayState === 2) aiWin.style.display = 'none';
+        switchBtn.innerText = ["✨ 切换至 Live2D", "❌ 隐藏看板娘", "🖼️ 显示 PNG"][displayState];
+      };
+
+      let pngIdx = 0; const pngList = ["sakiko", "dingzhen"];
+      document.getElementById('switch-char-btn').onclick = () => {
+        document.getElementById('img-' + pngList[pngIdx]).style.display = 'none';
+        pngIdx = (pngIdx + 1) % pngList.length;
+        document.getElementById('img-' + pngList[pngIdx]).style.display = 'block';
+      };
+
+      document.getElementById('png-ai-btn').onclick = () => {
+        const charKey = pngList[pngIdx];
+        currentPersona = PNG_CONFIGS[charKey].prompt; currentKey = "png_" + charKey; loadChatHistory(currentKey);
+        document.getElementById('ai-title').innerText = PNG_CONFIGS[charKey].title; aiWin.style.display = 'flex';
+      };
+
+      document.getElementById('l2d-ai-btn').onclick = () => {
+        const mid = localStorage.getItem('modelId') || 0, tid = localStorage.getItem('modelTexturesId') || 0;
+        const name = L2D_DATA.models[mid]?.[tid] || "看板娘";
+        currentPersona = L2D_DATA.prompts[mid]?.[tid] || `你是${name}`;
+        currentKey = "l2d_" + mid + "_" + tid; loadChatHistory(currentKey);
+        document.getElementById('ai-title').innerText = "对话 - " + name; aiWin.style.display = 'flex';
+      };
+
+      document.getElementById('clean-chat-btn').onclick = () => { confirmPanel.style.display = 'flex'; };
+      document.getElementById('confirm-clean-no').onclick = () => { confirmPanel.style.display = 'none'; };
+      document.getElementById('confirm-clean-yes').onclick = () => { chatHistories[currentKey] = []; saveHistories(); confirmPanel.style.display = 'none'; loadChatHistory(currentKey); };
+
+      async function sendMsg() {
+        const input = document.getElementById('chat-input'), text = input.value.trim();
+        if(!text) return;
+        appendMsg('Me', text, true); input.value = '';
+        if(!chatHistories[currentKey]) chatHistories[currentKey] = [];
+        chatHistories[currentKey].push({role: "user", content: text}); saveHistories();
+        const msgBox = appendMsg('AI', '......', false), span = msgBox.querySelector('.txt');
+        try {
+          const r = await fetch(API_HOST, {
+            method: 'POST', headers: { 'Authorization': `Bearer ${_getS()}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: "gpt-5-mini", stream: true,
+              messages: [{ role: "system", content: `${currentPersona}\n沉浸式表演。当前时间：${new Date().toLocaleString()}` }, ...chatHistories[currentKey].slice(-15)]
+            })
+          });
+          const reader = r.body.getReader(), decoder = new TextDecoder(); let fullText = "";
+          while(true) {
+            const {done, value} = await reader.read(); if(done) break;
+            decoder.decode(value).split('\n').forEach(line => {
+              const cleaned = line.replace(/^data: /, "").trim();
+              if(!cleaned || cleaned === "[DONE]") return;
+              try { const delta = JSON.parse(cleaned).choices[0]?.delta?.content || ""; fullText += delta; span.innerText = fullText; chatMsgs.scrollTop = chatMsgs.scrollHeight; } catch(e){}
+            });
+          }
+          if (fullText) { chatHistories[currentKey].push({role: "assistant", content: fullText}); saveHistories(); }
+        } catch(e) { span.innerText = "错误: " + e.message; }
+      }
+
+      function appendMsg(u, t, isMe) {
+        const d = document.createElement('div'); d.style.textAlign = isMe ? 'right' : 'left'; d.style.marginBottom = '15px';
+        d.innerHTML = `<div class="msg-bubble" style="display:inline-block; background:${isMe?'#222':'#eee'}; color:${isMe?'#fff':'#333'};"><span class="txt">${t}</span></div>`;
+        chatMsgs.appendChild(d); chatMsgs.scrollTop = chatMsgs.scrollHeight; return d;
+      }
+
+      document.getElementById('send-btn').onclick = sendMsg;
+      document.getElementById('chat-input').onkeydown = (e) => { if(e.key==='Enter') sendMsg(); };
+      document.getElementById('close-chat').onclick = () => aiWin.style.display = 'none';
+
+      const cdn = 'https://cdn.jsdelivr.net/gh/Saigonobakezimaho/live2d-widget-v3-main@main';
+      async function initL2D() {
+        const load = (u, t) => new Promise(r => { let s = document.createElement(t==='css'?'link':'script'); if(t==='css'){s.rel='stylesheet';s.href=u;}else s.src=u; s.onload=r; document.head.appendChild(s); });
+        await Promise.all([load(cdn+'/waifu.css','css'), load(cdn+'/Core/live2dcubismcore.js','js'), load(cdn+'/live2d-sdk.js','js'), load(cdn+'/waifu-tips.js','js')]);
+        initWidget({ homePath: '/', waifuPath: cdn + "/waifu-tips.json", cdnPath: cdn + "/Resources/", tools: ["switch-texture"] });
+      }
+      initL2D();
+    })();
+  </script>
+</body>

@@ -1,0 +1,49 @@
+/* 容器定位 */
+.cat-container {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    z-index: 999;
+}
+
+/* 猫头 */
+.cat-head {
+    width: 60px;
+    height: 50px;
+    background: #333;
+    border-radius: 50% 50% 45% 45%;
+    position: relative;
+    animation: bobble 2s infinite ease-in-out;
+}
+
+/* 猫耳朵 */
+.cat-head::before, .cat-head::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 20px solid #333;
+}
+.cat-head::before { left: 5px; transform: rotate(-20deg); }
+.cat-head::after { right: 5px; transform: rotate(20deg); }
+
+/* 眼睛 */
+.eye {
+    width: 8px;
+    height: 8px;
+    background: #fffa65;
+    border-radius: 50%;
+    position: absolute;
+    top: 20px;
+}
+.eye-l { left: 15px; }
+.eye-r { right: 15px; }
+
+/* 呼吸动画 */
+@keyframes bobble {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}

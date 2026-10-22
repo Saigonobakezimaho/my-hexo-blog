@@ -1,0 +1,55 @@
+<% var defaultBg = '#4d4d4d'; %>
+<% var defaultBgImg = '/img/biubiubiu.gif'; %>
+<% var overlayBgImg= theme.style.gif && theme.style.gif.enable && theme.style.gif.path ? theme.style.gif.path : defaultBgImg; %>
+<div class="overlay" style="background: <%= theme.style && theme.style.header ? theme.style.header : defaultBg %>;<% if (theme.style.gif && theme.style.gif.enable){ %>background: url('<%- url_for(overlayBgImg) %>') no-repeat ;<%}%>"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="<%- url_for('/') %>" class="profilepic">
+			<img src="<%- url_for(theme.avatar) %>" class="js-avatar">
+		</a>
+		<hgroup>
+			<h1 class="header-author"><a href="<%- url_for('/') %>"><%= config.author %></a></h1>
+		</hgroup>
+		<% if (config.subtitle) { %>
+		<p class="header-subtitle"><%= config.subtitle %></p>
+		<%}%>
+
+		<nav class="header-menu">
+			<ul>
+			<% for (var i in theme.menu){ %>
+				<li><a href="<%- url_for(theme.menu[i]) %>" <% if (theme.open_in_new.menu){ %>target="_blank"<% } %>><%= i %></a></li>
+			<%}%>
+			</ul>
+		</nav>
+		<nav class="header-smart-menu">
+			<% for (var i in theme.smart_menu){ %>
+				<% if(theme.smart_menu[i]){ %>
+					<a q-on="click: openSlider(e, '<%-i%>')" href="javascript:void(0)"><%= theme.smart_menu[i] %></a>
+				<% } %>
+			<%}%>
+		</nav>
+		<nav class="header-nav">
+			
+		<% if (theme.music && theme.music.enable){ %>
+			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+			<script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+			<script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script>
+			
+			<div id="aplayer-container" style="margin: 20px auto; width: 240px; min-height: 80px;">
+				<meting-js
+					server="netease"
+					type="album"
+					id="<%= (Array.isArray(theme.music.id) ? theme.music.id[0] : theme.music.id) %>"
+					fixed="false"
+					mini="false"
+					autoplay="<%= theme.music.autoPlay ? 'true' : 'false' %>"
+					theme="#4d4d4d"
+					list-folded="true"
+					list-max-height="200px">
+				</meting-js>
+			</div>
+		<% } %>
+
+		</nav>
+	</header>		
+</div>

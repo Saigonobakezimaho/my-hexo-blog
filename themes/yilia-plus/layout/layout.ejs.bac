@@ -1,0 +1,173 @@
+<%- partial('_partial/head') %>
+<body>
+  <div id="container" q-class="show:isCtnShow">
+    <canvas id="anm-canvas" class="anm-canvas"></canvas>
+    <div class="left-col" q-class="show:isShow">
+      <%- partial('_partial/left-col', null, {cache: !config.relative_link}) %>
+    </div>
+    <div class="mid-col" q-class="show:isShow,hide:isShow|isFalse">
+      <%- partial('_partial/mobile-nav', null, {cache: !config.relative_link}) %>
+      <div id="wrapper" class="body-wrap">
+        <div class="menu-l">
+          <div class="canvas-wrap">
+            <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
+          </div>
+          <div id="js-content" class="content-ll">
+            <%- body %>
+          </div>
+        </div>
+      </div>
+      <%- partial('_partial/footer') %>
+    </div>
+    <%- partial('_partial/after-footer') %>
+    <%- partial('_partial/tools') %>
+    <%- partial('_partial/viewer') %>
+  </div>
+
+  <div id="custom-character" style="position: fixed; bottom: 20px; right: 20px; width: 180px; z-index: 999; cursor: grab; user-select: none; touch-action: none;">
+    <img src="/image/sakiko.png" id="img-sakiko" class="char-img-item" style="width: 100%; height: auto; display: block; -webkit-user-drag: none;">
+    <img src="/image/dingzhen.png" id="img-dingzhen" class="char-img-item" style="width: 100%; height: auto; display: none; -webkit-user-drag: none;">
+    
+    <div id="switch-char-btn" style="position: absolute; bottom: 35px; right: 0; background: #555; color: #fff; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1001;">
+      切换形象
+    </div>
+    <div id="ai-chat-btn" style="position: absolute; bottom: 0; right: 0; background: #333; color: #fff; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-family: sans-serif; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+      点此沟通
+    </div>
+  </div>
+
+  <div id="ai-window" style="display: none; position: fixed; bottom: 100px; right: 20px; width: 320px; height: 450px; background: #fff; border-radius: 10px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); z-index: 1000; flex-direction: column; overflow: hidden; font-family: sans-serif;">
+    <div style="background: #333; color: #fff; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+      <span id="ai-title" style="font-size: 14px;">月光客服 - 丰川祥子</span>
+      <span id="close-chat" style="cursor: pointer; padding: 0 5px;">✕</span>
+    </div>
+    <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 15px; font-size: 13px; line-height: 1.5; color: #333;">
+      <div style="margin-bottom: 10px; color: #888;">[系统] 深度破防模块已就绪...</div>
+    </div>
+    <div style="padding: 10px; border-top: 1px solid #eee; display: flex;">
+      <input type="text" id="chat-input" placeholder="发消息..." style="flex: 1; border: 1px solid #ddd; border-radius: 4px; padding: 5px 10px; outline: none;">
+      <button id="send-btn" style="margin-left: 5px; background: #333; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">发送</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const CHARS = ["sakiko", "dingzhen"];
+      const CONFIGS = {
+        "sakiko": { title: "月光客服 - 丰川祥子", prompt: "你是丰川祥子，破产客服，毒舌高冷，满怀怨气。" },
+        "dingzhen": { title: "理塘大使 - 丁真", prompt: "你是理塘丁真，纯真，爱电子烟雪豹，瑞克五代。" }
+      };
+
+      let currentIdx = 0;
+      const aiTitle = document.getElementById('ai-title');
+      const chatMessages = document.getElementById('chat-messages');
+
+      // 切换逻辑：直接切换 display 状态
+      function doSwitch() {
+        // 隐藏当前图片
+        document.getElementById('img-' + CHARS[currentIdx]).style.display = 'none';
+        
+        // 更新索引
+        currentIdx = (currentIdx + 1) % CHARS.length;
+        const newChar = CHARS[currentIdx];
+        
+        // 显示新图片
+        document.getElementById('img-' + newChar).style.display = 'block';
+        
+        // 更新 UI
+        aiTitle.innerText = CONFIGS[newChar].title;
+        
+        const tip = document.createElement('div');
+        tip.style = "text-align:center; color:#999; font-size:11px; margin:10px 0; border-top:1px solid #f0f0f0;";
+        tip.innerText = "—— 频道已切换: " + newChar + " ——";
+        chatMessages.appendChild(tip);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      // 事件绑定
+      document.getElementById('switch-char-btn').onclick = (e) => { e.stopPropagation(); doSwitch(); };
+      document.getElementById('ai-chat-btn').onclick = () => {
+        const win = document.getElementById('ai-window');
+        win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'flex' : 'none';
+      };
+      document.getElementById('close-chat').onclick = () => { document.getElementById('ai-window').style.display = 'none'; };
+
+      // AI 发送
+      async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if(!text) return;
+
+        const currentKey = CHARS[currentIdx];
+        appendMsg('User', text);
+        input.value = '';
+
+        const msgId = 'msg-' + Date.now();
+        const responseDiv = appendMsg(currentKey, '', msgId);
+        const textSpan = responseDiv.querySelector('.content-text');
+
+        try {
+          const response = await fetch("<%- config.ai_chat.api_host %>", {
+            method: 'POST',
+            headers: { 'Authorization': "Bearer <%- config.ai_chat.api_key %>", 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: "gpt-5-mini",
+              messages: [{role: "system", content: CONFIGS[currentKey].prompt}, {role: "user", content: text}],
+              stream: true
+            })
+          });
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let fullText = "";
+          while (true) {
+            const {done, value} = await reader.read();
+            if(done) break;
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+            lines.forEach(line => {
+              if(line.startsWith('data: ') && line !== 'data: [DONE]') {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  fullText += data.choices[0]?.delta?.content || "";
+                  textSpan.innerText = fullText;
+                  chatMessages.scrollTop = chatMessages.scrollHeight;
+                } catch(e){}
+              }
+            });
+          }
+        } catch(e) { textSpan.innerText = "信号被雪豹阻断了..."; }
+      }
+
+      function appendMsg(sender, text, id) {
+        const div = document.createElement('div');
+        div.style.marginBottom = '12px';
+        if(id) div.id = id;
+        div.innerHTML = `<strong style="color: #e91e63;">${sender}:</strong> <span class="content-text" style="white-space: pre-wrap;">${text}</span>`;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return div;
+      }
+
+      document.getElementById('send-btn').onclick = sendMessage;
+      document.getElementById('chat-input').onkeypress = e => { if(e.key==='Enter') sendMessage(); };
+
+      // 拖拽
+      let isDragging = false, startX, startY;
+      const charEle = document.getElementById('custom-character');
+      charEle.onmousedown = (e) => {
+        if(e.target.id === 'switch-char-btn' || e.target.id === 'ai-chat-btn') return;
+        isDragging = true;
+        startX = e.clientX - charEle.offsetLeft;
+        startY = e.clientY - charEle.offsetTop;
+      };
+      window.onmousemove = (e) => {
+        if(!isDragging) return;
+        charEle.style.left = (e.clientX - startX) + 'px';
+        charEle.style.top = (e.clientY - startY) + 'px';
+        charEle.style.bottom = 'auto'; charEle.style.right = 'auto';
+      };
+      window.onmouseup = () => { isDragging = false; };
+    })();
+  </script>
+</body>
