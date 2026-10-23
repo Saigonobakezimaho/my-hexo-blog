@@ -33,21 +33,41 @@
 		<% if (theme.music && theme.music.enable){ %>
 			<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
 			<script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
-			<script src="https://cdn.jsdelivr.net/npm/meting@2.0.1/dist/Meting.min.js"></script>
 			
-			<div id="aplayer-container" style="margin: 20px auto; width: 240px; min-height: 80px;">
-				<meting-js
-					server="netease"
-					type="album"
-					id="<%= (Array.isArray(theme.music.id) ? theme.music.id[0] : theme.music.id) %>"
-					fixed="false"
-					mini="false"
-					autoplay="<%= theme.music.autoPlay ? 'true' : 'false' %>"
-					theme="#4d4d4d"
-					list-folded="true"
-					list-max-height="200px">
-				</meting-js>
-			</div>
+			<div id="aplayer-container" style="margin: 20px auto; width: 240px; min-height: 80px;"></div>
+			<script>
+			(function () {
+				var cover = 'https://p3.music.126.net/0I4uSJA8z_e5mgkjCF9eyQ==/109951170333844332.jpg?param=300y300';
+				var album = [
+					{ id: 2661682666, name: '夜の帳 (Yoru no Tobari)', lrc: 'https://api.i-meto.com/meting/api?server=netease&type=lrc&id=2661682666&auth=1ed5e59cd31c78cbc3cc0cb144461610a9ab9ef0' },
+					{ id: 2661683543, name: '放浪癖 (Hōrō-heki)', lrc: 'https://api.i-meto.com/meting/api?server=netease&type=lrc&id=2661683543&auth=69d6bc5e07f6b338f2c7f2c12b423b3ba0bfe391' },
+					{ id: 2661683544, name: '渋谷で迷子 (Shibuya de Maigo)', lrc: 'https://api.i-meto.com/meting/api?server=netease&type=lrc&id=2661683544&auth=0e1760007bde2b3bbc60e386f82acf9c8c95f333' },
+					{ id: 2661683545, name: '都市の風景 (Toshi no Fūkei)', lrc: 'https://api.i-meto.com/meting/api?server=netease&type=lrc&id=2661683545&auth=2c1acca70a02fb059a889d782a6fb3cf7effaf62' },
+					{ id: 2661682667, name: '興奮 (Kōfun)', lrc: 'https://api.i-meto.com/meting/api?server=netease&type=lrc&id=2661682667&auth=a99a064841e393ef9b1476b5bb0fe117af1f8235' },
+					{ id: 2661683546, name: '冒険 (Bōken)', lrc: 'https://api.i-meto.com/meting/api?server=netease&type=lrc&id=2661683546&auth=ec1f9e2161ea2af8d8be53c583a1faa4abc3b0df' },
+					{ id: 2661682668, name: '繋がり (Tsunagari)', lrc: 'https://api.i-meto.com/meting/api?server=netease&type=lrc&id=2661682668&auth=944011c25a2766a76d0b79b615179d2b487c34b8' },
+					{ id: 2661682669, name: '情熱 (Jōnetsu)', lrc: 'https://api.i-meto.com/meting/api?server=netease&type=lrc&id=2661682669&auth=3291bc30c19577561253179339bc2791812fdd46' },
+					{ id: 2661682670, name: '偶然の幸運 (Gūzen no Kōun)', lrc: 'https://api.i-meto.com/meting/api?server=netease&type=lrc&id=2661682670&auth=7618f1a0f5d92691410d3296a5189e83f13afcc0' },
+					{ id: 2661682671, name: '魔法 (Mahō)', lrc: 'https://api.i-meto.com/meting/api?server=netease&type=lrc&id=2661682671&auth=cfc84501a58210e1266d129147c0dcf3ad7d0aaf' }
+				];
+				new APlayer({
+					container: document.getElementById('aplayer-container'),
+					theme: '#4d4d4d',
+					autoplay: <%= theme.music.autoPlay ? 'true' : 'false' %>,
+					listFolded: true,
+					listMaxHeight: '200px',
+					audio: album.map(function (song) {
+						return {
+							name: song.name,
+							artist: 'Kkot',
+							url: 'https://music.163.com/song/media/outer/url?id=' + song.id + '.mp3',
+							cover: cover,
+							lrc: song.lrc
+						};
+					})
+				});
+			})();
+			</script>
 		<% } %>
 
 		</nav>
