@@ -37,35 +37,22 @@
 			<div id="aplayer-container" style="margin: 20px auto; width: 240px; min-height: 80px;"></div>
 			<script>
 			(function () {
-				var cover = '/music/cover.jpg';
-				var lrc = '[00:00.00] 作词 : Kkot\n[00:01.00] 作曲 : Kkot\n[00:05.00]纯音乐，请欣赏';
-				var album = [
-					{ file: '01.mp3', name: '夜の帳 (Yoru no Tobari)' },
-					{ file: '02.mp3', name: '放浪癖 (Hōrō-heki)' },
-					{ file: '03.mp3', name: '渋谷で迷子 (Shibuya de Maigo)' },
-					{ file: '04.mp3', name: '都市の風景 (Toshi no Fūkei)' },
-					{ file: '05.mp3', name: '興奮 (Kōfun)' },
-					{ file: '06.mp3', name: '冒険 (Bōken)' },
-					{ file: '07.mp3', name: '繋がり (Tsunagari)' },
-					{ file: '08.mp3', name: '情熱 (Jōnetsu)' },
-					{ file: '09.mp3', name: '偶然の幸運 (Gūzen no Kōun)' },
-					{ file: '10.mp3', name: '魔法 (Mahō)' }
-				];
+				var playlist = <%- JSON.stringify((theme.music.list || []).map(function (song) {
+					return {
+						name: song.name || song.file,
+						artist: song.artist || theme.music.artist || '',
+						url: '/music/' + song.file,
+						cover: song.cover || theme.music.cover || '',
+						lrc: song.lrc || theme.music.lrc || ''
+					};
+				})) %>;
 				new APlayer({
 					container: document.getElementById('aplayer-container'),
 					theme: '#4d4d4d',
 					autoplay: <%= theme.music.autoPlay ? 'true' : 'false' %>,
 					listFolded: true,
 					listMaxHeight: '200px',
-					audio: album.map(function (song) {
-						return {
-							name: song.name,
-							artist: 'Kkot',
-							url: '/music/' + song.file,
-							cover: cover,
-							lrc: lrc
-						};
-					})
+					audio: playlist
 				});
 			})();
 			</script>

@@ -142,18 +142,40 @@ busuanzi:
   site_visit: true  # 站点访问量显示
   article_visit: true  # 文章访问量显示
 
-# 网易云音乐插件
+# 音乐播放器
 music:
   enable: true
-  # 播放器尺寸类型(1：长尺寸、2：短尺寸)
-  type: 2
-  id: 258379522  # 网易云分享的音乐ID(更换音乐请更改此配置项)
-#2661682666
-#2661683543
-#258379522
   autoPlay: false  # 是否开启自动播放
-  # 提示文本(关闭请设置为false)
-  text: ''
+  artist: Kkot     # 歌手名，单曲可单独覆盖
+  cover: /music/cover.jpg  # 专辑封面
+  type: 2
+  # 歌词，单曲可用 lrc: 单独覆盖；留空则不显示歌词
+  lrc: |
+    [00:00.00] 作词 : Kkot
+    [00:01.00] 作曲 : Kkot
+    [00:05.00]纯音乐，请欣赏
+  # 歌单：音频文件放在 source/music/ 下，name 是显示的歌名
+  list:
+    - name: 夜の帳 (Yoru no Tobari)
+      file: 01.mp3
+    - name: 放浪癖 (Hōrō-heki)
+      file: 02.mp3
+    - name: 渋谷で迷子 (Shibuya de Maigo)
+      file: 03.mp3
+    - name: 都市の風景 (Toshi no Fūkei)
+      file: 04.mp3
+    - name: 興奮 (Kōfun)
+      file: 05.mp3
+    - name: 冒険 (Bōken)
+      file: 06.mp3
+    - name: 繋がり (Tsunagari)
+      file: 07.mp3
+    - name: 情熱 (Jōnetsu)
+      file: 08.mp3
+    - name: 偶然の幸運 (Gūzen no Kōun)
+      file: 09.mp3
+    - name: 魔法 (Mahō)
+      file: 10.mp3
 
 # 页面点击小红心
 clickLove:
